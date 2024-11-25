@@ -34,7 +34,22 @@ def process_sibling_relationship(message):
             print(f"OK! I learned that {name1} and {name2} are siblings.\n")
             
             
+            # Get the siblings of name1 and name2
+            siblings_of_name1 = list(prolog.query(f"siblings('{name1}', Sibling), Sibling \\= '{name1}'"))
             siblings_of_name2 = list(prolog.query(f"siblings('{name2}', Sibling), Sibling \\= '{name2}'"))
+            
+            
+           
+            for sibling in siblings_of_name1:
+                sibling_name = sibling["Sibling"]
+                if sibling_name != name2:
+                    if not list(prolog.query(f"siblings('{name2}', '{sibling_name}')")):
+                        assert_fact(f"siblings('{name2}', '{sibling_name}')")
+                    if not list(prolog.query(f"siblings('{sibling_name}', '{name2}')")):
+                        assert_fact(f"siblings('{sibling_name}', '{name2}')")
+                    if list(prolog.query(f"female('{sibling_name}')")):
+                        if not list(prolog.query(f"sister('{name2}', '{sibling_name}')")):
+                            assert_fact(f"sister('{name2}', '{sibling_name}')")
             
             for sibling in siblings_of_name2:
                 sibling_name = sibling["Sibling"]
@@ -43,8 +58,9 @@ def process_sibling_relationship(message):
                         assert_fact(f"siblings('{name1}', '{sibling_name}')")
                     if not list(prolog.query(f"siblings('{sibling_name}', '{name1}')")):
                         assert_fact(f"siblings('{sibling_name}', '{name1}')")
-                    if not list(prolog.query(f"sister('{name1}', '{sibling_name}')")):
-                        assert_fact(f"sister('{name1}', '{sibling_name}')")
+                    if list(prolog.query(f"female('{sibling_name}')")):
+                        if not list(prolog.query(f"sister('{name1}', '{sibling_name}')")):
+                            assert_fact(f"sister('{name1}', '{sibling_name}')")
 
            
            
@@ -164,6 +180,7 @@ def process_sister_relationship(message):
         if name1 != name2:
             
             assert_fact(f"sister('{name1}', '{name2}')")
+            assert_fact(f"female('{name1}')")
             print(f"OK! I learned that {name1} is a sister of {name2}.\n")
             
             
@@ -257,11 +274,28 @@ def process_sibling_list_query(message):
             print()    
         return True
     
-    
+
     return False   
         
-        
 
+def process_sister_list_query(message):
+    pattern = r"Who\s+are\s+the\s+sisters\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+    
+    if match:
+        name1 = match.group(1)
+        sisters = list(prolog.query(f"siblings('{name1}', Sibling), female(Sibling)"))
+        
+        if sisters:
+            sisters_names = ', '.join(sister["Sibling"] for sister in sisters)
+            print(sisters_names)
+            print()
+        else:
+            print(f"{name1} has no sisters.")
+        
+        return True
+    
+    return False
 
 def main():
     
@@ -282,6 +316,8 @@ def main():
         elif process_sister_query(message):
             continue
         elif process_sibling_list_query(message):
+            continue
+        elif process_sister_list_query(message):
             continue
         elif re.search(r"I\s+would\s+like\s+to\s+stop\s+talking\s+now", message, re.IGNORECASE):
             print("Goodbye!")

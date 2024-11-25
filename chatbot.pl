@@ -3,6 +3,7 @@
 :- dynamic siblings/2.
 :- dynamic parent/2.
 :- dynamic sister/2.
+:- dynamic female/1.
 
 
 
@@ -11,3 +12,6 @@ siblings(X, Y) :-
 parent(P, X),
 parent(P, Y),
 X \= Y.
+
+female(alice).
+female(other_female_person).
