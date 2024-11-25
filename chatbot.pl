@@ -2,6 +2,7 @@
 % This is so that we can edit the sibling and parent statements in python
 :- dynamic siblings/2.
 :- dynamic parent/2.
+:- dynamic sister/2.
 
 
 

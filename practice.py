@@ -139,6 +139,96 @@ def process_child_query(message):
     
     return False
 
+def process_sister_relationship(message):
+    
+    pattern = r"(\w+)\s+is\s+a\s+sister\s+of\s+(\w+)"
+    match = re.search(pattern, message)
+    
+    if match:
+        name1 = match.group(1)
+        name2 = match.group(2)
+        
+        if name1 != name2:
+            
+            assert_fact(f"sister('{name1}', '{name2}')")
+            print(f"OK! I learned that {name1} is a sister of {name2}.\n")
+            
+            
+            if not list(prolog.query(f"siblings('{name1}', '{name2}')")):
+                assert_fact(f"siblings('{name1}', '{name2}')")
+            if not list(prolog.query(f"siblings('{name2}', '{name1}')")):
+                assert_fact(f"siblings('{name2}', '{name1}')")
+            
+            # We wil get a list of the siblings of name2 and put them in a list
+            siblings_of_name2 = list(prolog.query(f"siblings('{name2}', Sibling), Sibling \\= '{name2}'"))
+            
+            
+            # Process for assigning name1 as a sibling and sister to the siblings of name2
+            # We will get the siblings from the list one by one
+            # We assign name1 as a sibling to sibling
+            # We assign sibling as a sibling to name1
+            # We assign name1 as a sister to sibling
+            for sibling in siblings_of_name2:
+                sibling_name = sibling["Sibling"]
+                if sibling_name != name1:
+                    if not list(prolog.query(f"siblings('{name1}', '{sibling_name}')")):
+                        assert_fact(f"siblings('{name1}', '{sibling_name}')")
+                    if not list(prolog.query(f"siblings('{sibling_name}', '{name1}')")):
+                        assert_fact(f"siblings('{sibling_name}', '{name1}')")
+                    if not list(prolog.query(f"sister('{name1}', '{sibling_name}')")):
+                        assert_fact(f"sister('{name1}', '{sibling_name}')")
+                    
+            parent1 = list(prolog.query(f"parent(P, '{name1}')"))
+            parent2 = list(prolog.query(f"parent(P, '{name2}')"))
+            
+            
+            if parent1 and parent2:
+                parent = parent1[0]["P"]
+                if parent != parent2[0]["P"]:
+                    print("Both siblings have different parents.")
+            elif parent1:
+                parent = parent1[0]["P"]
+                assert_fact(f"parent('{parent}', '{name2}')")
+               
+            elif parent2:
+                parent = parent2[0]["P"]
+                assert_fact(f"parent('{parent}', '{name1}')")
+        else:
+            print(f"Error: {name1} cannot be a sibling of themselves.")
+            
+            
+        return True
+    
+    return False
+
+def process_sister_query(message):
+    
+    pattern = r"Is\s+(\w+)\s+a\s+sister\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+    
+    if match:
+        name1 = match.group(1)
+        name2 = match.group(2)
+        result = list(prolog.query(f"siblings('{name1}', '{name2}')"))
+        
+        
+        if result:
+            print(f"Yes, {name1} is a sister of {name2}.\n")
+        else:
+            print(f"No, {name1} is not a sister of {name2}.\n")
+            
+            
+        return True
+    
+    
+    return False
+    
+    
+            
+            
+        
+        
+
 
 def main():
     
@@ -153,6 +243,10 @@ def main():
         elif process_sibling_query(message):
             continue
         elif process_child_query(message):
+            continue
+        elif process_sister_relationship(message):
+            continue
+        elif process_sister_query(message):
             continue
         elif re.search(r"I\s+would\s+like\s+to\s+stop\s+talking\s+now", message, re.IGNORECASE):
             print("Goodbye!")
