@@ -32,6 +32,19 @@ def process_sibling_relationship(message):
             assert_fact(f"siblings('{name1}', '{name2}')")
             assert_fact(f"siblings('{name2}', '{name1}')")
             print(f"OK! I learned that {name1} and {name2} are siblings.\n")
+            
+            
+            siblings_of_name2 = list(prolog.query(f"siblings('{name2}', Sibling), Sibling \\= '{name2}'"))
+            
+            for sibling in siblings_of_name2:
+                sibling_name = sibling["Sibling"]
+                if sibling_name != name1:
+                    if not list(prolog.query(f"siblings('{name1}', '{sibling_name}')")):
+                        assert_fact(f"siblings('{name1}', '{sibling_name}')")
+                    if not list(prolog.query(f"siblings('{sibling_name}', '{name1}')")):
+                        assert_fact(f"siblings('{sibling_name}', '{name1}')")
+                    if not list(prolog.query(f"sister('{name1}', '{sibling_name}')")):
+                        assert_fact(f"sister('{name1}', '{sibling_name}')")
 
            
            
@@ -212,6 +225,7 @@ def process_sister_query(message):
         result = list(prolog.query(f"siblings('{name1}', '{name2}')"))
         
         
+        
         if result:
             print(f"Yes, {name1} is a sister of {name2}.\n")
         else:
@@ -224,8 +238,27 @@ def process_sister_query(message):
     return False
     
     
+
+def process_sibling_list_query(message):
+    
+    
+    pattern = r"Who\s+are\s+the\s+siblings\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+    
+    if match:
+        name1 = match.group(1)
+        siblings = list(prolog.query(f"siblings('{name1}', Sibling), Sibling \\= '{name1}'"))
+        
+        
+        if siblings:
             
-            
+            sibling_names = ', '.join(sibling["Sibling"] for sibling in siblings)
+            print(sibling_names)
+            print()    
+        return True
+    
+    
+    return False   
         
         
 
@@ -247,6 +280,8 @@ def main():
         elif process_sister_relationship(message):
             continue
         elif process_sister_query(message):
+            continue
+        elif process_sibling_list_query(message):
             continue
         elif re.search(r"I\s+would\s+like\s+to\s+stop\s+talking\s+now", message, re.IGNORECASE):
             print("Goodbye!")
