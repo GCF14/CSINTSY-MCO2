@@ -5,7 +5,10 @@
 :- dynamic sister/2.
 :- dynamic female/1.
 
-
+:- dynamic mother/2.
+:- dynamic brother/2.
+:- dynamic father/2.
+:- dynamic male/1.
 
 % Basically says X and Y are siblings if P is a parent to both X and y, and X and Y are not the same person
 siblings(X, Y) :-
@@ -15,3 +18,9 @@ X \= Y.
 
 female(alice).
 female(other_female_person).
+
+% Basically says X is the father of Y and X is a male, and X and Y are not the same person
+father(X, Y) :-
+parent(X, Y),
+male(X),
+X \= Y.
