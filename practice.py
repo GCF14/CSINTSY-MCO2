@@ -17,6 +17,7 @@ def assert_fact(fact):
     except Exception as e:
         print(f"Error asserting fact '{fact}': {e}")
 
+
 def process_sibling_relationship(message):
     
     pattern = r"(\w+)\s+and\s+(\w+)\s+are\s+siblings"
@@ -86,6 +87,69 @@ def process_sibling_relationship(message):
         return True
     
     return False
+
+
+def process_father_relationship(message):
+    # Regular expression to extract father relationships
+    pattern = r"(\w+)\s+is\s+the\s+father\s+of\s+(\w+)"
+    match = re.search(pattern, message)
+    
+    if match:
+        # Extract names from the message
+        father = match.group(1)
+        child = match.group(2)
+        
+        # Assert the fact into the Prolog database
+        assert_fact(f"father('{father}', '{child}')")
+        assert_fact(f"parent('{father}', '{child}')")
+        assert_fact(f"male('{father}')")
+        
+        print(f"OK! I learned that {father} is a parent(father) of {child}.\n")
+
+        siblings = list(prolog.query(f"father('{father}', Sibling), Sibling \\= '{child}'"))
+        
+        for sibling in siblings:
+            sibling_name = sibling["Sibling"]
+            assert_fact(f"siblings('{child}', '{sibling_name}')")
+            assert_fact(f"siblings('{sibling_name}', '{child}')")
+           
+        
+ 
+        siblings = list(prolog.query(f"siblings('{child}', Sibling)"))
+        
+        for sibling in siblings:
+            sibling_name = sibling["Sibling"]
+            if sibling_name != child:
+                if not list(prolog.query(f"parent('{father}', '{sibling_name}')")):
+                    assert_fact(f"parent('{father}', '{sibling_name}')")
+        return True
+    
+    return False
+
+def process_father_query(message):
+    # Regular expression to extract the father and child from the query
+    pattern = r"Is\s+(\w+)\s+the\s+father\s+of\s+(\w+)"
+    match = re.search(pattern, message)
+    
+    if match:
+        # Extract names from the message
+        father = match.group(1)
+        child = match.group(2)
+        
+        # Query the Prolog knowledge base
+        result = list(prolog.query(f"parent('{father}', '{child}'), father('{father}', '{child}'), male('{father}')"))
+        
+        # Return appropriate response based on the query result
+        if result:
+            print(f"Yes, {father} is the father of {child}.") 
+        else:
+            print(f"No, {father} is not the father of {child}.")
+          
+        return True
+    
+    return False
+
+
 
 
 def process_parent_relationship(message):
@@ -254,7 +318,24 @@ def process_sister_query(message):
     
     return False
     
+def process_children_list_query(message):   
+    pattern = r"Who\s+are\s+the\s+children\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
     
+    if match:
+        name1 = match.group(1)
+        children = list(prolog.query(f"parent('{name1}', Child), Child \\= '{name1}'"))
+        
+        
+        if children:
+            
+            children_names = ', '.join(children["Child"] for children in children)
+            print(children_names)
+            print()    
+        return True
+    
+
+    return False 
 
 def process_sibling_list_query(message):
     
@@ -297,6 +378,8 @@ def process_sister_list_query(message):
     
     return False
 
+
+
 def main():
     
     while True:
@@ -318,6 +401,12 @@ def main():
         elif process_sibling_list_query(message):
             continue
         elif process_sister_list_query(message):
+            continue
+        elif process_father_relationship(message):
+            continue
+        elif process_father_query(message):
+            continue
+        elif process_children_list_query(message):
             continue
         elif re.search(r"I\s+would\s+like\s+to\s+stop\s+talking\s+now", message, re.IGNORECASE):
             print("Goodbye!")
