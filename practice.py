@@ -99,6 +99,10 @@ def process_father_relationship(message):
         father = match.group(1)
         child = match.group(2)
         
+        if list(prolog.query(f"parent('{father}', '{child}'), father('{father}', '{child}'), male('{father}')")):
+            print(f"{father} is already a parent(father) of {child}!\n")
+            return True
+
         # Assert the fact into the Prolog database
         assert_fact(f"father('{father}', '{child}')")
         assert_fact(f"parent('{father}', '{child}')")
@@ -131,7 +135,7 @@ def process_father_query(message):
     pattern = r"Is\s+(\w+)\s+the\s+father\s+of\s+(\w+)"
     match = re.search(pattern, message)
     
-    if match:
+    if match: 
         # Extract names from the message
         father = match.group(1)
         child = match.group(2)
@@ -158,8 +162,13 @@ def process_parent_relationship(message):
     match = re.search(pattern, message)
     
     if match:
+
         child = match.group(1)
         parent = match.group(2)
+
+        if list(prolog.query(f"parent('{parent}', '{child}'), father('{parent}', '{child}'), male('{parent}')")):
+            print(f"{parent} is already a parent of {child}!\n")
+            return True
    
         assert_fact(f"parent('{parent}', '{child}')")
         print(f"OK! I learned that {parent} is a parent of {child}.\n")
