@@ -24,3 +24,9 @@ father(X, Y) :-
 parent(X, Y),
 male(X),
 X \= Y.
+
+% Basically says X is the mother of Y and X is a female, and X and Y are not the same person
+mother(X, Y) :-
+parent(X, Y),
+female(X),
+X \= Y.
