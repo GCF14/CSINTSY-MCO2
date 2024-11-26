@@ -1,6 +1,7 @@
 
 % This is so that we can edit the sibling and parent statements in python
 :- dynamic siblings/2.
+:- dynamic grandfather/2.
 :- dynamic parent/2.
 :- dynamic sister/2.
 :- dynamic female/1.
@@ -16,6 +17,7 @@ parent(P, X),
 parent(P, Y),
 X \= Y.
 
+% This is just placeholder for female people
 female(alice).
 female(other_female_person).
 
