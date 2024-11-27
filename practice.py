@@ -916,6 +916,25 @@ def process_IsSon_query(message):
     
     return False
 
+def process_IsDaughter_query(message):
+
+    pattern = r"Is\s+(\w+)\s+a\s+son\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        daughter = match.group(1)
+        parent = match.group(2)
+        result = list(prolog.query(f"parent('{parent}', '{daughter}'), female('{daughter}')"))
+
+        if result:
+            print(f"Yes, {daughter} is a son of {parent}.\n")
+        else:
+            print(f"No, {daughter} is not a son of {parent}.\n")
+        
+        return True
+    
+    return False
+
 def process_IsChild_query(message):
 
     pattern = r"Is\s+(\w+)\s+a\s+child\s+of\s+(\w+)\?"
@@ -1043,6 +1062,8 @@ def main():
                 elif process_WhoMother_query(qmessage):
                     continue
                 elif process_IsSon_query(qmessage):
+                    continue
+                elif process_IsDaughter_query(message):
                     continue
                 elif process_IsChild_query(qmessage):
                     continue
