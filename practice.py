@@ -860,6 +860,47 @@ def process_grandmother_query(message):
     
      return False
 
+def process_WhoFather_query(message):
+
+    pattern = r"Who\s+is\s+the\s+father\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        child = match.group(1)
+        result = list(prolog.query(f"father(Father, '{child}')"))
+
+        if result:
+            # Extracting the mother from the Prolog result
+           father_name = result[0]['Father']
+           print(f"{father_name} is the father of {child}.\n")
+        else:
+            print(f"{child} has no father.\n")
+            
+            
+        return True
+    
+    return False
+
+def process_WhoMother_query(message):
+
+    pattern = r"Who\s+is\s+the\s+mother\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        child = match.group(1)
+        result = list(prolog.query(f"mother(Mother, '{child}')"))
+
+        if result:
+            # Extracting the mother from the Prolog result
+            mother_name = result[0]['Mother']
+            print(f"{mother_name} is the mother of {child}.\n")
+        else:
+            print(f"{child} has no mother.\n")
+            
+            
+        return True
+    
+    return False
 
 def main():
     
@@ -904,7 +945,11 @@ def main():
                     continue
                 elif process_grandmother_query(qmessage):
                     continue
-                elif smessage == "I would like to exit queries":
+                elif process_WhoFather_query(qmessage):
+                    continue
+                elif process_WhoMother_query(qmessage):
+                    continue
+                elif qmessage == "I would like to exit queries":
                     checker = False
                 else:
                     print("Sorry, I didn't understand that. Please try again.\n")
