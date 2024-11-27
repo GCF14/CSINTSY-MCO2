@@ -1063,7 +1063,7 @@ def main():
                     continue
                 elif process_IsSon_query(qmessage):
                     continue
-                elif process_IsDaughter_query(message):
+                elif process_IsDaughter_query(qmessage):
                     continue
                 elif process_IsChild_query(qmessage):
                     continue
