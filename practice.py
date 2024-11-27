@@ -1121,7 +1121,7 @@ def process_aunt_query(message):
 
 def process_relationship_query(message):
      
-    pattern = r"Is\s+(\w+)\s+related\s+to\s+(\w+)\?"
+    pattern = r"Are\s+(\w+)\s+and\s+(\w+)\s+related\?"
     match = re.search(pattern, message)
     
     if match:
@@ -1136,15 +1136,26 @@ def process_relationship_query(message):
                             f"mother('{family}', '{name}')",
                             f"father('{family}', '{name}')",
                             f"grandfather('{family}', '{name}')",
-                            f"grandmother('{family}', '{name}')"]
+                            f"grandmother('{family}', '{name}')",
+                            f"parent('{family}', '{name}')",
+                            f"siblings('{name}', '{family}')",
+                            f"brother('{name}', '{family}')",
+                            f"sister('{name}', '{family}')",
+                            f"uncle('{name}', '{family}')",
+                            f"aunt('{name}', '{family}')",
+                            f"mother('{name}', '{family}')",
+                            f"father('{name}', '{family}')",
+                            f"grandfather('{name}', '{family}')",
+                            f"grandmother('{name}', '{family}')",
+                            f"parent('{name}', '{family}')"]
 
         for relation in relationships:
             result = list(prolog.query(relation))
             if result:
-                print(f"Yes, {family} is related to {name}.\n")
+                print(f"Yes, {family} and {name} are relateed.\n")
                 return True
 
-        print(f"No, {family} is not related to {name}.\n")      
+        print(f"No, {family} and {name} are not related.\n")      
     return True
 
 def main():
