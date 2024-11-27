@@ -166,7 +166,7 @@ def process_father_query(message):
         child = match.group(2)
         
         # Query the Prolog knowledge base
-        result = list(prolog.query(f"parent('{father}', '{child}'), father('{father}', '{child}'), male('{father}')"))
+        result = list(prolog.query(f"father('{father}', '{child}')"))
         
         # Return appropriate response based on the query result
         if result:
@@ -234,7 +234,7 @@ def process_mother_query(message):
         child = match.group(2)
         
         # Query the Prolog knowledge base
-        result = list(prolog.query(f"parent('{mother}', '{child}'), mother('{mother}', '{child}'), female('{mother}')"))
+        result = list(prolog.query(f"mother('{mother}', '{child}')"))
         
         # Return appropriate response based on the query result
         if result:
@@ -615,11 +615,6 @@ def process_son_relationship(message):
             print(f"{son} already has 2 parents. Cannot add {parent} as another parent.\n")
             return True
 
-        # Check if the child already has 2 parents
-       if parent_counter[son] >= 2:
-            print(f"{son} already has 2 parents. Cannot add {parent} as another parent.\n")
-            return True
-
        assert_fact(f"parent('{parent}', '{son}')")
        assert_fact(f"male('{son}')")
        print(f"OK! I learned that {son} is a son of {parent}.\n")
@@ -902,6 +897,45 @@ def process_WhoMother_query(message):
     
     return False
 
+def process_IsSon_query(message):
+
+    pattern = r"Is\s+(\w+)\s+a\s+son\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        son = match.group(1)
+        parent = match.group(2)
+        result = list(prolog.query(f"parent('{parent}', '{son}'), male('{son}')"))
+
+        if result:
+            print(f"Yes, {son} is a son of {parent}.\n")
+        else:
+            print(f"No, {son} is not a son of {parent}.\n")
+        
+        return True
+    
+    return False
+
+def process_IsChild_query(message):
+
+    pattern = r"Is\s+(\w+)\s+a\s+child\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        child = match.group(1)
+        parent = match.group(2)
+        result = list(prolog.query(f"parent('{parent}', '{child}'), male('{child}')"))
+
+        if result:
+            print(f"Yes, {child} is a son of {parent}.\n")
+        else:
+            print(f"No, {child} is not a son of {parent}.\n")
+        
+        return True
+    
+    return False
+
+
 def main():
     
     while True:
@@ -948,6 +982,10 @@ def main():
                 elif process_WhoFather_query(qmessage):
                     continue
                 elif process_WhoMother_query(qmessage):
+                    continue
+                elif process_IsSon_query(qmessage):
+                    continue
+                elif process_IsChild_query(qmessage):
                     continue
                 elif qmessage == "I would like to exit queries":
                     checker = False
