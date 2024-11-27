@@ -936,6 +936,30 @@ def process_IsChild_query(message):
     return False
 
 
+def process_WhoParents_query(message):
+    # Match the query pattern
+    pattern = r"Who\s+are\s+the\s+parents\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+    
+    if match:
+        child = match.group(1)  # Extract the child's name from the query
+        query = f"parent(Parent, {child})"  # Prolog query to find parents
+        result = list(prolog.query(query))  # Execute the query
+        
+        if result:
+            # Iterate over the result to extract all parents
+            parents = [res['Parent'] for res in result]
+            parent_list = ', '.join(parents)  # Join parent names into a string
+            print(f"{parent_list} are the parents of {child}.\n")
+        else:
+            print(f"No parents found for {child}.\n")
+        
+        return True
+
+    return False
+
+
+
 def main():
     
     while True:
@@ -986,6 +1010,8 @@ def main():
                 elif process_IsSon_query(qmessage):
                     continue
                 elif process_IsChild_query(qmessage):
+                    continue
+                elif process_WhoParents_query(qmessage):
                     continue
                 elif qmessage == "I would like to exit queries":
                     checker = False
