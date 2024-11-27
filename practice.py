@@ -287,12 +287,14 @@ def process_parent_relationship(message):
         
         
         
-        grandfathers = list(prolog.query(f"grandfather(Grandfather, '{child}')"))
+        # Check if parent is a grandfather or grandmother
+        grandchildren = list(prolog.query(f"grandchild(Grandchild, '{parent}')"))
         
-        for grandfather in grandfathers:
-            grandfather_name = grandfather["Grandfather"]
-            assert_fact(f"parent('{grandfather_name}', '{parent}')")
-                   
+        for grandchild in grandchildren:
+            grandchild_name = grandchild["Grandchild"]
+            if not list(prolog.query(f"parent('{child}', '{grandchild_name}')")):
+                assert_fact(f"parent('{child}', '{grandchild_name}')")
+                    
         return True
     
     return False
@@ -550,7 +552,8 @@ def process_sibling_list_query(message):
         
         if siblings:
             
-            sibling_names = ', '.join(sibling["Sibling"] for sibling in siblings)
+            sibling_names_set = set(sibling["Sibling"] for sibling in siblings)
+            sibling_names = ', '.join(sibling_names_set)
             print(sibling_names)
             print()    
         return True
@@ -1162,31 +1165,29 @@ def process_relationship_query(message):
 
 def process_children_relationship(message):
     # Pattern to match the input message
-    pattern = r"(\w+)\s*,\s*(\w+)\s+and\s+(\w+)\s+are\s+children\s+of\s+(\w+)"
+    pattern = r"((?:\w+,?\s*)*(?:and\s+\w+))\s+are\s+children\s+of\s+(\w+)"
     match = re.search(pattern, message)
 
     if match:
         # Extract the children and parent names from the message
-        child1 = match.group(1)
-        child2 = match.group(2)
-        child3 = match.group(3)
-        parent = match.group(4)
+        childrenList = match.group(1)
+        parent = match.group(2)
         
+        children = [child.strip() for child in re.split(r",|\s+and\s+", childrenList)]
+        children = [child for child in children if child]
+
         # Ensure children have distinct names
-        if child1 != child2 and child1 != child3 and child2 != child3:
+        if len(children) == len(set(children)):
             # Add children-parent relationships
-            assert_fact(f"parent('{parent}', '{child1}')")
-            assert_fact(f"parent('{parent}', '{child2}')")
-            assert_fact(f"parent('{parent}', '{child3}')")
+            for child in children:
+                assert_fact(f"parent('{parent}', '{child}')")
             
             # Add sibling relationships without duplicates
-            children = [child1, child2, child3]
             for i in range(len(children)):
                 for j in range(i + 1, len(children)):
-                    sibling1, sibling2 = children[i], children[j]
-                    if not list(prolog.query(f"siblings('{sibling1}', '{sibling2}')")):
-                        assert_fact(f"siblings('{sibling1}', '{sibling2}')")
-                        assert_fact(f"siblings('{sibling2}', '{sibling1}')")
+
+                    if not list(prolog.query(f"siblings('{children[i]}', '{children[j]}')")) and not list(prolog.query(f"siblings('{children[j]}', '{children[i]}')")):
+                        assert_fact(f"siblings('{children[i]}', '{children[j]}')")
             
             # Check if the parent has a parent (i.e., a grandparent)
             grandfathers = list(prolog.query(f"parent(Grandfather, '{parent}'), male(Grandfather)"))
@@ -1206,7 +1207,7 @@ def process_children_relationship(message):
                         assert_fact(f"grandmother('{grandmother_name}', '{child}')")
             
             # Print confirmation message
-            print(f"OK! I learned that {child1}, {child2}, and {child3} are children of {parent}.\n")
+            print(f"OK! I learned that {children} are children of {parent}.\n")
         else:
             print(f"Error: Children must have distinct names.")
         return True

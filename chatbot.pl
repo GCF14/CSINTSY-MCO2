@@ -4,6 +4,7 @@
 :- dynamic sister/2.
 :- dynamic female/1.
 
+
 :- dynamic mother/2.
 :- dynamic brother/2.
 :- dynamic father/2.
@@ -33,3 +34,6 @@ mother(X, Y) :-
 parent(X, Y),
 female(X),
 X \= Y.
+
+grandchild(Grandchild, Grandparent) :- grandfather(Grandparent, Grandchild).
+grandchild(Grandchild, Grandparent) :- grandmother(Grandparent, Grandchild).
