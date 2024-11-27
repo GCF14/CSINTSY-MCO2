@@ -916,6 +916,25 @@ def process_IsSon_query(message):
     
     return False
 
+def process_IsDaughter_query(message):
+
+    pattern = r"Is\s+(\w+)\s+a\s+son\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        daughter = match.group(1)
+        parent = match.group(2)
+        result = list(prolog.query(f"parent('{parent}', '{daughter}'), female('{daughter}')"))
+
+        if result:
+            print(f"Yes, {daughter} is a son of {parent}.\n")
+        else:
+            print(f"No, {daughter} is not a son of {parent}.\n")
+        
+        return True
+    
+    return False
+
 def process_IsChild_query(message):
 
     pattern = r"Is\s+(\w+)\s+a\s+child\s+of\s+(\w+)\?"
@@ -959,6 +978,41 @@ def process_WhoParents_query(message):
     return False
 
 
+def process_AreTheParents_query(message):
+    pattern = r"Are\s+(\w+)\s+and\s+(\w+)\s+the\s+parents\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+    
+    if match:
+        parent1 = match.group(1)  # Extract the first parent's name
+        parent2 = match.group(2)  # Extract the second parent's name
+        child = match.group(3)    # Extract the child's name
+        
+        query = f"parent(Parent, {child})"  # Prolog query to find parents
+        result = list(prolog.query(query))  # Execute the query
+        
+        if result:
+            # Extract all parents from the result
+            parents = [res['Parent'] for res in result]
+            
+            # Check if parent1 and parent2 are in the list of parents
+            is_parent1 = parent1 in parents
+            is_parent2 = parent2 in parents
+            
+            if is_parent1 and is_parent2:
+                print(f"Yes, both {parent1} and {parent2} are the parents of {child}.\n")
+            elif is_parent1:
+                print(f"Yes, {parent1} is a parent of {child}, but {parent2} is not.\n")
+            elif is_parent2:
+                print(f"Yes, {parent2} is a parent of {child}, but {parent1} is not.\n")
+            else:
+                print(f"No, neither {parent1} nor {parent2} is a parent of {child}.\n")
+        else:
+            print(f"No parents found for {child}.\n")
+        
+        return True
+
+    return False
+
 
 def main():
     
@@ -974,6 +1028,31 @@ def main():
             qmessage = " "
             checker = True
             while qmessage != "I would like to exit queries" and checker:
+                print("\nAll possible queries:")
+                print("[1] Are [X] and [Y] siblings?")
+                print("[2] Who are the siblings of [X]?")
+                print("[3] Is [X] a sister of [Y]?")
+                print("[4] Who are the sisters of [X]?")
+                print("[5] Is [X] a brother of [Y]?")
+                print("[6] Who are the brothers of [X]?")
+                print("[7] Is [X] the mother of [Y]?")
+                print("[8] Who is the mother of [X]?")
+                print("[9] Is [X] the father of [Y]?")
+                print("[10] Who is the father of [X]?")
+                print("[11] Are [X] and [Y] the parents of [Z]?")
+                print("[12] Who are the parents of [X]?")
+                print("[13] Is [X] a grandmother of [Y]?")
+                print("[14] Is [X] a grandfather of [Y]?")
+                print("[15] Who are the daughters of [X]?")
+                print("[16] Who are the sons of [X]?")
+                print("[17] Who are the children of [X]?")
+                print("[18] Is [X] a son of [Y]?")
+                print("[19] Is [X] a daughter of [Y]?")
+                print("[20] Is [X] a child of [Y]?")
+                print("[21] Is [X] an aunt of [Y]?")
+                print("[22] Is X an uncle of Y?")
+                print("[23] Are [X] and [Y] relatives?\n")
+
                 qmessage = input("Enter your message: ").strip()
                 if process_sibling_query(qmessage):
                     continue
@@ -1009,9 +1088,13 @@ def main():
                     continue
                 elif process_IsSon_query(qmessage):
                     continue
+                elif process_IsDaughter_query(qmessage):
+                    continue
                 elif process_IsChild_query(qmessage):
                     continue
                 elif process_WhoParents_query(qmessage):
+                    continue
+                elif process_AreTheParents_query(qmessage):
                     continue
                 elif qmessage == "I would like to exit queries":
                     checker = False
