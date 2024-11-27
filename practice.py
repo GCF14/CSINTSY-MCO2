@@ -1042,7 +1042,7 @@ def process_uncle_relationship(message):
 
 def process_uncle_query(message):
 
-    pattern = r"Is\s+(\w+)\s+an\s+unucle\s+of\s+(\w+)\?"
+    pattern = r"Is\s+(\w+)\s+an\s+uncle\s+of\s+(\w+)\?"
     match = re.search(pattern, message)
 
     if match:
@@ -1060,6 +1060,46 @@ def process_uncle_query(message):
     
     
     return False
+
+
+def process_aunt_relationship(message):
+
+    pattern = r"(\w+)\s+is\s+an\s+aunt\s+of\s+(\w+)"    
+    match = re.search(pattern, message)
+
+    if match:
+        aunt = match.group(1)
+        nibling = match.group(2)
+        parents = list(prolog.query(f"parent(Parent, '{nibling}')"))
+
+        for parent in parents:
+            assert_fact(f"siblings('{aunt}', '{parent['Parent']}')")
+            assert_fact(f"aunt('{aunt}', '{nibling}')")
+
+        siblings = list(prolog.query(f"siblings(Sibling, '{nibling}')"))
+        for sibling in siblings:
+            assert_fact(f"aunt('{aunt}', '{sibling['Sibling']}')")
+            
+        print(f"OK! I learned that {aunt} is an aunt of {nibling}.\n")        
+        return True
+    return False 
+
+def process_aunt_query(message):
+     
+     pattern = r"Is\s+(\w+)\s+an\s+aunt\s+of\s+(\w+)\?"
+     match = re.search(pattern, message)
+    
+     if match:
+        aunt = match.group(1)
+        nibling = match.group(2)
+        result = list(prolog.query(f"aunt('{aunt}', '{nibling}')"))
+        
+        if result:
+            print(f"Yes, {aunt} is an aunt of {nibling}.\n")
+        else:
+            print(f"No, {aunt} is not an aunt of {nibling}.\n")
+        return True      
+     return False
 
 def main():
     
@@ -1120,6 +1160,8 @@ def main():
                     continue
                 elif process_uncle_query(qmessage):
                     continue
+                elif process_aunt_query(qmessage):
+                    continue
                 elif qmessage == "I would like to exit queries":
                     checker = False
                 else:
@@ -1150,7 +1192,9 @@ def main():
                     continue
                 elif process_grandmother_relationship(smessage):
                     continue
-                elif process_uncle_relationship(qmessage):
+                elif process_uncle_relationship(smessage):
+                    continue      
+                elif process_aunt_relationship(smessage):
                     continue
                 elif smessage == "I would like to exit statements":
                     checker = False
