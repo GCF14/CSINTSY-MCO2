@@ -416,7 +416,7 @@ def process_sister_query(message):
     if match:
         name1 = match.group(1)
         name2 = match.group(2)
-        result = list(prolog.query(f"siblings('{name1}', '{name2}')"))
+        result = list(prolog.query(f"sister('{name1}', '{name2}')"))
         
         
         
@@ -504,7 +504,7 @@ def process_brother_query(message):
     if match:
         name1 = match.group(1)
         name2 = match.group(2)
-        result = list(prolog.query(f"siblings('{name1}', '{name2}')"))
+        result = list(prolog.query(f"brother('{name1}', '{name2}')"))
         
         
         if result:
