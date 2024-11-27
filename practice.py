@@ -1228,7 +1228,7 @@ def main():
             qmessage = " "
             checker = True
             while qmessage != "I would like to exit queries" and checker:
-                qmessage = input("Enter your message: ").strip()
+                qmessage = input("Enter your message (Query Mode): ").strip()
                 if process_sibling_query(qmessage):
                     continue
                 elif process_child_query(qmessage):
@@ -1286,7 +1286,7 @@ def main():
             smessage = " "
             checker = True        
             while smessage != "I would like to exit statements" and checker:
-                smessage = input("Enter your message: ").strip()
+                smessage = input("Enter your message (Statement Mode): ").strip()
                 if process_sibling_relationship(smessage):
                     continue
                 elif process_parent_relationship(smessage):
