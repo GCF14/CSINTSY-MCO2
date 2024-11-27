@@ -1,4 +1,3 @@
-
 % This is so that we can edit the sibling and parent statements in python
 :- dynamic siblings/2.
 :- dynamic parent/2.
@@ -9,6 +8,8 @@
 :- dynamic brother/2.
 :- dynamic father/2.
 :- dynamic male/1.
+:- dynamic uncle/2.
+:- dynamic aunt/2.
 
 % Basically says X and Y are siblings if P is a parent to both X and y, and X and Y are not the same person
 siblings(X, Y) :-
