@@ -1119,6 +1119,34 @@ def process_aunt_query(message):
         return True      
      return False
 
+def process_relationship_query(message):
+     
+    pattern = r"Is\s+(\w+)\s+related\s+to\s+(\w+)\?"
+    match = re.search(pattern, message)
+    
+    if match:
+        family = match.group(1)
+        name = match.group(2)
+
+        relationships = [   f"siblings('{family}', '{name}')",
+                            f"brother('{family}', '{name}')",
+                            f"sister('{family}', '{name}')",
+                            f"uncle('{family}', '{name}')",
+                            f"aunt('{family}', '{name}')",
+                            f"mother('{family}', '{name}')",
+                            f"father('{family}', '{name}')",
+                            f"grandfather('{family}', '{name}')",
+                            f"grandmother('{family}', '{name}')"]
+
+        for relation in relationships:
+            result = list(prolog.query(relation))
+            if result:
+                print(f"Yes, {family} is related to {name}.\n")
+                return True
+
+        print(f"No, {family} is not related to {name}.\n")      
+    return True
+
 def main():
     
     while True:
@@ -1179,6 +1207,8 @@ def main():
                 elif process_uncle_query(qmessage):
                     continue
                 elif process_aunt_query(qmessage):
+                    continue
+                elif process_relationship_query(qmessage):
                     continue
                 elif qmessage == "I would like to exit queries":
                     checker = False
