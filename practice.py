@@ -1063,7 +1063,7 @@ def process_uncle_query(message):
 
 def process_AreTheParents_relationship(message):
 
-    pattern = r"(\w+)\s+and\s+(\w+)\s+are\s+the\s+parents\s+of\s+(\w+)\?"
+    pattern = r"(\w+)\s+and\s+(\w+)\s+are\s+the\s+parents\s+of\s+(\w+)"
     match = re.search(pattern, message)
 
     if match:
