@@ -1050,7 +1050,7 @@ def main():
                 print("[19] Is [X] a daughter of [Y]?")
                 print("[20] Is [X] a child of [Y]?")
                 print("[21] Is [X] an aunt of [Y]?")
-                print("[22] Is X an uncle of Y?")
+                print("[22] Is [X] an uncle of [Y]?")
                 print("[23] Are [X] and [Y] relatives?\n")
 
                 qmessage = input("Enter your message: ").strip()
