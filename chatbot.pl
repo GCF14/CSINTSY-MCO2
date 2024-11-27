@@ -10,6 +10,8 @@
 :- dynamic male/1.
 :- dynamic uncle/2.
 :- dynamic aunt/2.
+:- dynamic grandfather/2.
+:- dynamic grandmother/2.
 
 % Basically says X and Y are siblings if P is a parent to both X and y, and X and Y are not the same person
 siblings(X, Y) :-
