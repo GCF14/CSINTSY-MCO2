@@ -166,7 +166,7 @@ def process_father_query(message):
         child = match.group(2)
         
         # Query the Prolog knowledge base
-        result = list(prolog.query(f"parent('{father}', '{child}'), father('{father}', '{child}'), male('{father}')"))
+        result = list(prolog.query(f"father('{father}', '{child}')"))
         
         # Return appropriate response based on the query result
         if result:
@@ -234,7 +234,7 @@ def process_mother_query(message):
         child = match.group(2)
         
         # Query the Prolog knowledge base
-        result = list(prolog.query(f"parent('{mother}', '{child}'), mother('{mother}', '{child}'), female('{mother}')"))
+        result = list(prolog.query(f"mother('{mother}', '{child}')"))
         
         # Return appropriate response based on the query result
         if result:
@@ -615,11 +615,6 @@ def process_son_relationship(message):
             print(f"{son} already has 2 parents. Cannot add {parent} as another parent.\n")
             return True
 
-        # Check if the child already has 2 parents
-       if parent_counter[son] >= 2:
-            print(f"{son} already has 2 parents. Cannot add {parent} as another parent.\n")
-            return True
-
        assert_fact(f"parent('{parent}', '{son}')")
        assert_fact(f"male('{son}')")
        print(f"OK! I learned that {son} is a son of {parent}.\n")
@@ -797,56 +792,236 @@ def process_grandfather_query(message):
     
      return False
 
+
+def process_grandmother_relationship(message):
+    
+    pattern = r"(\w+)\s+is\s+a\s+grandmother\s+of\s+(\w+)"
+    match = re.search(pattern, message)
+    
+    if match:
+        
+        grandmother = match.group(1)
+        grandkid = match.group(2)
+        
+        # Check if the grandkid already has a grandmother
+        existing_grandmothers = list(prolog.query(f"grandmother(G, '{grandkid}')"))
+        
+        if existing_grandmothers:
+            print(f"{grandkid} already has a grandmother. Cannot add {grandmother} as another grandmother.\n")
+            return True
+        
+        # Get the parents of the grandkid
+        parents = list(prolog.query(f"parent(Parent, '{grandkid}')"))
+
+        # Add the grandfather as a parent of the parents
+        for parent in parents:
+            assert_fact(f"parent('{grandmother}', '{parent['Parent']}')")
+        
+        # Add the grandfather as a grandfather of the grandkid
+        assert_fact(f"grandmother('{grandmother}', '{grandkid}')")
+        
+        # Get the siblings of the grandkid
+        siblings = list(prolog.query(f"siblings(Sibling, '{grandkid}')"))
+
+        # Add the grandfather as a grandfather of the siblings
+        for sibling in siblings:
+            assert_fact(f"grandmother('{grandmother}', '{sibling['Sibling']}')")
+        
+        print(f"OK! I learned that {grandmother} is a grandmother of {grandkid}.\n")
+        
+        return True
+    
+    return False
+
+def process_grandmother_query(message):
+     
+     pattern = r"Is\s+(\w+)\s+a\s+grandmother\s+of\s+(\w+)\?"
+     match = re.search(pattern, message)
+    
+     if match:
+        grandmother = match.group(1)
+        grandkid = match.group(2)
+        result = list(prolog.query(f"grandmother('{grandmother}', '{grandkid}')"))
+        
+        
+        if result:
+            print(f"Yes, {grandmother} is a grandmother of {grandkid}.\n")
+        else:
+            print(f"No, {grandmother} is not a grandmother of {grandkid}.\n")
+            
+            
+        return True
+    
+    
+     return False
+
+def process_WhoFather_query(message):
+
+    pattern = r"Who\s+is\s+the\s+father\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        child = match.group(1)
+        result = list(prolog.query(f"father(Father, '{child}')"))
+
+        if result:
+            # Extracting the mother from the Prolog result
+           father_name = result[0]['Father']
+           print(f"{father_name} is the father of {child}.\n")
+        else:
+            print(f"{child} has no father.\n")
+            
+            
+        return True
+    
+    return False
+
+def process_WhoMother_query(message):
+
+    pattern = r"Who\s+is\s+the\s+mother\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        child = match.group(1)
+        result = list(prolog.query(f"mother(Mother, '{child}')"))
+
+        if result:
+            # Extracting the mother from the Prolog result
+            mother_name = result[0]['Mother']
+            print(f"{mother_name} is the mother of {child}.\n")
+        else:
+            print(f"{child} has no mother.\n")
+            
+            
+        return True
+    
+    return False
+
+def process_IsSon_query(message):
+
+    pattern = r"Is\s+(\w+)\s+a\s+son\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        son = match.group(1)
+        parent = match.group(2)
+        result = list(prolog.query(f"parent('{parent}', '{son}'), male('{son}')"))
+
+        if result:
+            print(f"Yes, {son} is a son of {parent}.\n")
+        else:
+            print(f"No, {son} is not a son of {parent}.\n")
+        
+        return True
+    
+    return False
+
+def process_IsChild_query(message):
+
+    pattern = r"Is\s+(\w+)\s+a\s+child\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        child = match.group(1)
+        parent = match.group(2)
+        result = list(prolog.query(f"parent('{parent}', '{child}'), male('{child}')"))
+
+        if result:
+            print(f"Yes, {child} is a son of {parent}.\n")
+        else:
+            print(f"No, {child} is not a son of {parent}.\n")
+        
+        return True
+    
+    return False
+
+
 def main():
     
     while True:
-        
+        print("Available messages:\n")
+        print("I would like to enter queries\n")
+        print("I would like to enter statements\n")
+        print("I would like to stop talking now\n")
+
         message = input("Enter your message: ").strip()
+
+        if message == "I would like to enter queries":
+            qmessage = " "
+            checker = True
+            while qmessage != "I would like to exit queries" and checker:
+                qmessage = input("Enter your message: ").strip()
+                if process_sibling_query(qmessage):
+                    continue
+                elif process_child_query(qmessage):
+                    continue
+                elif process_sister_query(qmessage):
+                    continue
+                elif process_brother_query(qmessage):
+                    continue
+                elif process_sibling_list_query(qmessage):
+                    continue
+                elif process_sister_list_query(qmessage):
+                    continue
+                elif process_brother_list_query(qmessage):
+                    continue
+                elif process_father_query(qmessage):
+                    continue
+                elif process_mother_query(qmessage):
+                    continue
+                elif process_sons_list_query(qmessage):
+                    continue
+                elif process_daughters_list_query(qmessage):
+                    continue
+                elif process_children_list_query(qmessage):
+                    continue
+                elif process_grandfather_query(qmessage):
+                    continue
+                elif process_grandmother_query(qmessage):
+                    continue
+                elif process_WhoFather_query(qmessage):
+                    continue
+                elif process_WhoMother_query(qmessage):
+                    continue
+                elif process_IsSon_query(qmessage):
+                    continue
+                elif process_IsChild_query(qmessage):
+                    continue
+                elif qmessage == "I would like to exit queries":
+                    checker = False
+                else:
+                    print("Sorry, I didn't understand that. Please try again.\n")
+
+        elif message == "I would like to enter statements":
+            smessage = " "
+            checker = True        
+            while smessage != "I would like to exit statements" and checker:
+                smessage = input("Enter your message: ").strip()
+                if process_sibling_relationship(smessage):
+                    continue
+                elif process_parent_relationship(smessage):
+                    continue
+                elif process_sister_relationship(smessage):
+                    continue
+                elif process_brother_relationship(smessage):
+                    continue
+                elif process_father_relationship(smessage):
+                    continue
+                elif process_mother_relationship(smessage):
+                    continue
+                elif process_son_relationship(smessage):
+                    continue
+                elif process_daughter_relationship(smessage):
+                    continue    
+                elif process_grandfather_relationship(smessage):
+                    continue
+                elif process_grandmother_relationship(smessage):
+                    continue
+                elif smessage == "I would like to exit statements":
+                    checker = False
+                else:
+                    print("Sorry, I didn't understand that. Please try again.\n")
         
-        if process_sibling_relationship(message):
-            continue
-        elif process_parent_relationship(message):
-            continue
-        elif process_sibling_query(message):
-            continue
-        elif process_child_query(message):
-            continue
-        elif process_sister_relationship(message):
-            continue
-        elif process_sister_query(message):
-            continue
-        elif process_brother_relationship(message):
-            continue
-        elif process_brother_query(message):
-            continue
-        elif process_sibling_list_query(message):
-            continue
-        elif process_sister_list_query(message):
-            continue
-        elif process_brother_list_query(message):
-            continue
-        elif process_father_query(message):
-            continue
-        elif process_father_relationship(message):
-            continue
-        elif process_mother_relationship(message):
-            continue
-        elif process_mother_query(message):
-            continue
-        elif process_son_relationship(message):
-            continue
-        elif process_daughter_relationship(message):
-            continue
-        elif process_sons_list_query(message):
-            continue
-        elif process_daughters_list_query(message):
-            continue
-        elif process_children_list_query(message):
-            continue
-        elif process_grandfather_relationship(message):
-            continue
-        elif process_grandfather_query(message):
-            continue
         elif re.search(r"I\s+would\s+like\s+to\s+stop\s+talking\s+now", message, re.IGNORECASE):
             print("Goodbye!")
             break
