@@ -1042,7 +1042,7 @@ def process_uncle_relationship(message):
 
 def process_uncle_query(message):
 
-    pattern = r"Is\s+(\w+)\s+an\s+unucle\s+of\s+(\w+)\?"
+    pattern = r"Is\s+(\w+)\s+an\s+uncle\s+of\s+(\w+)\?"
     match = re.search(pattern, message)
 
     if match:
@@ -1060,6 +1060,26 @@ def process_uncle_query(message):
     
     
     return False
+
+def process_AreTheParents_relationship(message):
+
+    pattern = r"(\w+)\s+and\s+(\w+)\s+are\s+the\s+parents\s+of\s+(\w+)\?"
+    match = re.search(pattern, message)
+
+    if match:
+        parent1 = match.group(1)
+        parent2 = match.group(2)
+        child = match.group(3)
+
+        assert_fact(f"parent('{parent1}', '{child}')")
+        assert_fact(f"parent('{parent2}', '{child}')")
+
+        print(f"OK! I learned that {parent1} and {parent2} are parents of {child}.\n")
+
+        return True
+
+    return False
+
 
 def main():
     
@@ -1150,7 +1170,9 @@ def main():
                     continue
                 elif process_grandmother_relationship(smessage):
                     continue
-                elif process_uncle_relationship(qmessage):
+                elif process_uncle_relationship(smessage):
+                    continue
+                elif process_AreTheParents_relationship(smessage):
                     continue
                 elif smessage == "I would like to exit statements":
                     checker = False
