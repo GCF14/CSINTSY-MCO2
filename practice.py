@@ -797,6 +797,70 @@ def process_grandfather_query(message):
     
      return False
 
+
+def process_grandmother_relationship(message):
+    
+    pattern = r"(\w+)\s+is\s+a\s+grandmother\s+of\s+(\w+)"
+    match = re.search(pattern, message)
+    
+    if match:
+        
+        grandmother = match.group(1)
+        grandkid = match.group(2)
+        
+        # Check if the grandkid already has a grandmother
+        existing_grandmothers = list(prolog.query(f"grandmother(G, '{grandkid}')"))
+        
+        if existing_grandmothers:
+            print(f"{grandkid} already has a grandmother. Cannot add {grandmother} as another grandmother.\n")
+            return True
+        
+        # Get the parents of the grandkid
+        parents = list(prolog.query(f"parent(Parent, '{grandkid}')"))
+
+        # Add the grandfather as a parent of the parents
+        for parent in parents:
+            assert_fact(f"parent('{grandmother}', '{parent['Parent']}')")
+        
+        # Add the grandfather as a grandfather of the grandkid
+        assert_fact(f"grandmother('{grandmother}', '{grandkid}')")
+        
+        # Get the siblings of the grandkid
+        siblings = list(prolog.query(f"siblings(Sibling, '{grandkid}')"))
+
+        # Add the grandfather as a grandfather of the siblings
+        for sibling in siblings:
+            assert_fact(f"grandmother('{grandmother}', '{sibling['Sibling']}')")
+        
+        print(f"OK! I learned that {grandmother} is a grandmother of {grandkid}.\n")
+        
+        return True
+    
+    return False
+
+def process_grandmother_query(message):
+     
+     pattern = r"Is\s+(\w+)\s+a\s+grandmother\s+of\s+(\w+)\?"
+     match = re.search(pattern, message)
+    
+     if match:
+        grandmother = match.group(1)
+        grandkid = match.group(2)
+        result = list(prolog.query(f"grandmother('{grandmother}', '{grandkid}')"))
+        
+        
+        if result:
+            print(f"Yes, {grandmother} is a grandmother of {grandkid}.\n")
+        else:
+            print(f"No, {grandmother} is not a grandmother of {grandkid}.\n")
+            
+            
+        return True
+    
+    
+     return False
+
+
 def main():
     
     while True:
@@ -838,6 +902,8 @@ def main():
                     continue
                 elif process_grandfather_query(qmessage):
                     continue
+                elif process_grandmother_query(qmessage):
+                    continue
                 elif smessage == "I would like to exit queries":
                     checker = False
                 else:
@@ -865,6 +931,8 @@ def main():
                 elif process_daughter_relationship(smessage):
                     continue    
                 elif process_grandfather_relationship(smessage):
+                    continue
+                elif process_grandmother_relationship(smessage):
                     continue
                 elif smessage == "I would like to exit statements":
                     checker = False
