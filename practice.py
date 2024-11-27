@@ -1158,6 +1158,61 @@ def process_relationship_query(message):
         print(f"No, {family} and {name} are not related.\n")      
     return True
 
+
+
+def process_children_relationship(message):
+    # Pattern to match the input message
+    pattern = r"(\w+)\s*,\s*(\w+)\s+and\s+(\w+)\s+are\s+children\s+of\s+(\w+)"
+    match = re.search(pattern, message)
+
+    if match:
+        # Extract the children and parent names from the message
+        child1 = match.group(1)
+        child2 = match.group(2)
+        child3 = match.group(3)
+        parent = match.group(4)
+        
+        # Ensure children have distinct names
+        if child1 != child2 and child1 != child3 and child2 != child3:
+            # Add children-parent relationships
+            assert_fact(f"parent('{parent}', '{child1}')")
+            assert_fact(f"parent('{parent}', '{child2}')")
+            assert_fact(f"parent('{parent}', '{child3}')")
+            
+            # Add sibling relationships without duplicates
+            children = [child1, child2, child3]
+            for i in range(len(children)):
+                for j in range(i + 1, len(children)):
+                    sibling1, sibling2 = children[i], children[j]
+                    if not list(prolog.query(f"siblings('{sibling1}', '{sibling2}')")):
+                        assert_fact(f"siblings('{sibling1}', '{sibling2}')")
+                        assert_fact(f"siblings('{sibling2}', '{sibling1}')")
+            
+            # Check if the parent has a parent (i.e., a grandparent)
+            grandfathers = list(prolog.query(f"parent(Grandfather, '{parent}'), male(Grandfather)"))
+            grandmothers = list(prolog.query(f"parent(Grandmother, '{parent}'), female(Grandmother)"))
+            
+            # Add grandparent-grandchild relationships
+            for grandfather in grandfathers:
+                grandfather_name = grandfather["Grandfather"]
+                for child in children:
+                    if not list(prolog.query(f"grandfather('{grandfather_name}', '{child}')")):
+                        assert_fact(f"grandfather('{grandfather_name}', '{child}')")
+            
+            for grandmother in grandmothers:
+                grandmother_name = grandmother["Grandmother"]
+                for child in children:
+                    if not list(prolog.query(f"grandmother('{grandmother_name}', '{child}')")):
+                        assert_fact(f"grandmother('{grandmother_name}', '{child}')")
+            
+            # Print confirmation message
+            print(f"OK! I learned that {child1}, {child2}, and {child3} are children of {parent}.\n")
+        else:
+            print(f"Error: Children must have distinct names.")
+        return True
+
+    return False
+
 def main():
     
     while True:
@@ -1256,6 +1311,8 @@ def main():
                 elif process_AreTheParents_relationship(smessage):
                     continue      
                 elif process_aunt_relationship(smessage):
+                    continue
+                elif process_children_relationship(smessage):
                     continue
                 elif smessage == "I would like to exit statements":
                     checker = False
